@@ -5,8 +5,6 @@ const { Account } = models;
 
 const loginPage = (req, res) => res.render('login');
 
-const signupPage = (req, res) => res.render('signup');
-
 const logout = (req, res) => {
   // Destroy session cookies to notify the server of logout
   req.session.destroy();
@@ -87,7 +85,6 @@ const signup = async (req, res) => {
 // Exports
 module.exports = {
   loginPage,
-  signupPage,
   logout,
   login,
   signup,

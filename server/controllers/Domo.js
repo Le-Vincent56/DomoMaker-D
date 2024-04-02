@@ -3,19 +3,7 @@ const models = require('../models');
 
 const { Domo } = models;
 
-const makerPage = async (req, res) => {
-  try {
-    // Get the domos based on the account ID
-    const query = { owner: req.session.account._id };
-    const docs = await Domo.find(query).select('name age').lean().exec();
-
-    return res.render('app', { domos: docs });
-  } catch (err) {
-    // If there's an error, log it and return a status code
-    console.log(err);
-    return res.status(500).json({ error: 'Error retrieving domos!' });
-  }
-};
+const makerPage = async (req, res) => res.render('app');
 
 const makeDomo = async (req, res) => {
   // Check if the Domo has a name and an age
@@ -36,7 +24,7 @@ const makeDomo = async (req, res) => {
     await newDomo.save();
 
     // Once complete, redirect to the maker page
-    return res.json({ redirect: '/maker' });
+    return res.status(201).json({ name: newDomo.name, age: newDomo.age });
   } catch (err) {
     // If there's an error, log it
     console.log(err);
@@ -51,8 +39,24 @@ const makeDomo = async (req, res) => {
   }
 };
 
+const getDomos = async (req, res) => {
+  try {
+    // Try to get the domos for the account id
+    const query = { owner: req.session.account._id };
+    const docs = await Domo.find(query).select('name age').lean().exec();
+
+    // Return the domos in a json
+    return res.json({ domos: docs });
+  } catch (err) {
+    // Log any errors and return a status code
+    console.log(err);
+    return res.status(500).json({ error: 'Error retrieving domos!' });
+  }
+};
+
 // Exports
 module.exports = {
   makerPage,
   makeDomo,
+  getDomos,
 };
