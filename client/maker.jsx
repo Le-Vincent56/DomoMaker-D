@@ -11,17 +11,47 @@ const handleDomo = (e, onDomoAdded) => {
     // Get the name and age of the domo
     const name = e.target.querySelector('#domoName').value;
     const age = e.target.querySelector('#domoAge').value;
+    const level = e.target.querySelector('#domoLevel').value;
 
     // Check if both a name and age are given
-    if(!name || !age) {
+    if(!name || !age || !level) {
         helper.handleError('All fields are required');
         return false;
     }
 
     // Post the domo
-    helper.sendPost(e.target.action, {name, age}, onDomoAdded);
+    helper.sendPost(e.target.action, {name, age, level}, onDomoAdded);
     return false;
 };
+
+const setEditing = (e, isEditing, onChangeEdit) => {
+    e.preventDefault();
+    helper.hideError();
+
+    // If not editing, then change to editing
+    if(!isEditing){
+        onChangeEdit();
+    }
+    return false;
+}
+
+const saveEdits = (e, isEditing, onChangeEdit) => {
+    e.preventDefault();
+    helper.hideError();
+
+    // If editing, then end editing
+    if(isEditing) {
+        onChangeEdit();
+    }
+
+    return false;
+}
+
+const editDomo = (e) => {
+    // Prevent default events and hide error messages
+    e.preventDefault();
+    helper.hideError();
+}
 
 const DomoForm = (props) => {
     return(
@@ -32,14 +62,47 @@ const DomoForm = (props) => {
             method="POST"
             className="domoForm"
         >
-            <label htmlFor="name">Name</label>
-            <input id="domoName" type="text" name="name" placeholder="Domo Name"/>
-            <label htmlFor="age">Age: </label>
-            <input id="domoAge" type="number" min="0" name="age"/>
+            <span id="nameSection">
+                <label htmlFor="name">Name: </label>
+                <input id="domoName" type="text" name="name" placeholder="Domo Name"/>
+            </span>
+            <span id="ageSection">
+                <label htmlFor="age">Age: </label>
+                <input id="domoAge" type="number" min="0" name="age"/>
+            </span>
+            <span id="levelSection">
+                <label htmlFor="level">Level: </label>
+                <input id="domoLevel" type="number" min="1" max="10" name="level"/>
+            </span>
             <input className="makeDomoSubmit" type="submit" value="Make Domo"/>
         </form>
     );
 };
+
+const DomoEditButton = (props) => {
+    if(!props.isEditing) {
+        return(
+            <div id="editSection">
+                <button id="domoEdit"
+                onClick={(e) => setEditing(e, props.isEditing, props.triggerEditing)}
+                className="domoEdit">Edit Domos
+                </button>
+            </div>
+        );
+    } else {
+        return(
+            <div id="editSection">
+                <button id="domoEdit"
+                onClick={(e) => saveEdits(e, props.isEditing, props.triggerEditing)}
+                className="domoEdit">Edit Domos
+                </button>
+                <button id="domoSave">
+                    Save Domos
+                </button>
+            </div>
+        );
+    }
+}
 
 const DomoList = (props) => {
     // Store the domos array using useState so that we can update and rerender the list
@@ -71,6 +134,7 @@ const DomoList = (props) => {
                 <img src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"/>
                 <h3 className="domoName">Name: {domo.name}</h3>
                 <h3 className="domoAge">Age: {domo.age}</h3>
+                <h3 className="domoLevel">Level: {domo.level}</h3>
             </div>
         );
     });
@@ -86,6 +150,7 @@ const DomoList = (props) => {
 const App = () => {
     // Store a state variable as a boolean and set it to false
     const [reloadDomos, setReloadDomos] = useState(false);
+    const [editingDomos, setEditingDomos] = useState(false);
 
     // When we render DomoForm, we create a triggerReload prop, which calls setReloadDomos
     // and passes in the negation of reloadDomos so that it toggles every time it gets called
@@ -94,8 +159,11 @@ const App = () => {
             <div id="makeDomo">
                 <DomoForm triggerReload={() => setReloadDomos(!reloadDomos)}/>
             </div>
+            <div id="editDomo">
+                <DomoEditButton isEditing={editingDomos} triggerEditing={() => setEditingDomos(!editingDomos)}/>
+            </div>
             <div id="domos">
-                <DomoList domos={[]} reloadDomos={reloadDomos}/>
+                <DomoList domos={[]} reloadDomos={reloadDomos} editing={!editingDomos}/>
             </div>
         </div>
     );

@@ -18,6 +18,11 @@ const DomoSchema = new mongoose.Schema({
     min: 0,
     required: true,
   },
+  level: {
+    type: Number,
+    min: 1,
+    required: true,
+  },
   owner: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -27,12 +32,17 @@ const DomoSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  id: {
+    type: Number,
+    default: Math.random() * 1000
+  }
 });
 
 // Converts a doc to something we can store in redis later on.
 DomoSchema.statics.toAPI = (doc) => ({
   name: doc.name,
   age: doc.age,
+  level: doc.level,
 });
 
 // Establish the Domo model
