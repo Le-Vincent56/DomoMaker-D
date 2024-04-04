@@ -24,33 +24,39 @@ const handleDomo = (e, onDomoAdded) => {
     return false;
 };
 
-const setEditing = (e, isEditing, onChangeEdit) => {
+const startEdit = (e, onStartEdit) => {
     e.preventDefault();
     helper.hideError();
 
-    // If not editing, then change to editing
-    if(!isEditing){
-        onChangeEdit();
-    }
+    onStartEdit();
     return false;
 }
 
-const saveEdits = (e, isEditing, onChangeEdit) => {
+const saveEdits = (e, onSaveEdit, onDomosEdited) => {
     e.preventDefault();
     helper.hideError();
 
-    // If editing, then end editing
-    if(isEditing) {
-        onChangeEdit();
-    }
-
+    saveDomos(e, onDomosEdited);
+    onSaveEdit();
     return false;
 }
 
-const editDomo = (e) => {
+const saveDomos = (e, onDomosEdited) => {
     // Prevent default events and hide error messages
     e.preventDefault();
     helper.hideError();
+
+    const reactDomos = document.querySelectorAll('.domoEditing');
+    console.log(reactDomos);
+
+    const loadDomosFromServer = async () => {
+        const response = await fetch('/getDomos');
+        const data = await response.json();
+
+        for(let i = 0; i < data.domos.keys.length; i++) {
+
+        }
+    }
 }
 
 const DomoForm = (props) => {
@@ -80,26 +86,22 @@ const DomoForm = (props) => {
 };
 
 const DomoEditButton = (props) => {
-    if(!props.isEditing) {
+    return(
+        <button id="domoEdit"
+            onClick={(e) => startEdit(e, props.triggerEditing)}
+            className="domoEdit">Edit Domos
+        </button>
+    );
+}
+
+const DomoSaveButton = (props) => {
+    // Only show if editing
+    if(props.isEditing) {
         return(
-            <div id="editSection">
-                <button id="domoEdit"
-                onClick={(e) => setEditing(e, props.isEditing, props.triggerEditing)}
-                className="domoEdit">Edit Domos
-                </button>
-            </div>
-        );
-    } else {
-        return(
-            <div id="editSection">
-                <button id="domoEdit"
-                onClick={(e) => saveEdits(e, props.isEditing, props.triggerEditing)}
-                className="domoEdit">Edit Domos
-                </button>
-                <button id="domoSave">
-                    Save Domos
-                </button>
-            </div>
+            <button id="domoSave"
+                onClick={(e) => saveEdits(e, props.triggerEditing, props.triggerReload)}
+                className="domoSave">Save Domos
+            </button>
         );
     }
 }
@@ -128,16 +130,31 @@ const DomoList = (props) => {
     }
 
     // Create a node for each domo
-    const domoNodes = domos.map(domo => {
-        return (
-            <div key={domo.id} className="domo">
-                <img src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"/>
-                <h3 className="domoName">Name: {domo.name}</h3>
-                <h3 className="domoAge">Age: {domo.age}</h3>
-                <h3 className="domoLevel">Level: {domo.level}</h3>
-            </div>
-        );
+    domoNodes = domos.map(domo => {
+        if(props.isEditing) {
+            return (
+                <div key={domo.id} className="domoEditing">
+                    <img src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"/>
+                    <h3 className="domoName">Name: </h3>
+                    <input id="editName" type="text" name="name" placeholder={domo.name}/>
+                    <h3 className="domoAge">Age: </h3>
+                    <input id="editAge" type="number" min="0" name="age" placeholder={domo.age}/>
+                    <h3 className="domoLevel">Level: </h3>
+                    <input id="editLevel" type="number" min="1" max="10" name="level" placeholder={domo.level}/>
+                </div>
+            );
+        } else {
+            return (
+                <div key={domo.id} className="domo">
+                    <img src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"/>
+                    <h3 className="domoName">Name: {domo.name}</h3>
+                    <h3 className="domoAge">Age: {domo.age}</h3>
+                    <h3 className="domoLevel">Level: {domo.level}</h3>
+                </div>
+            );
+        }
     });
+    
 
     // List all domo nodes
     return (
@@ -160,10 +177,14 @@ const App = () => {
                 <DomoForm triggerReload={() => setReloadDomos(!reloadDomos)}/>
             </div>
             <div id="editDomo">
-                <DomoEditButton isEditing={editingDomos} triggerEditing={() => setEditingDomos(!editingDomos)}/>
+                <DomoEditButton triggerEditing={() => setEditingDomos(true)}/>
+                <DomoSaveButton isEditing={editingDomos} 
+                    triggerEditing={() => setEditingDomos(false)} 
+                    triggerReload={() => setReloadDomos(!reloadDomos)}
+                />
             </div>
             <div id="domos">
-                <DomoList domos={[]} reloadDomos={reloadDomos} editing={!editingDomos}/>
+                <DomoList domos={[]} reloadDomos={reloadDomos} isEditing={editingDomos}/>
             </div>
         </div>
     );
