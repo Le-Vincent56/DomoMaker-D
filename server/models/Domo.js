@@ -34,7 +34,7 @@ const DomoSchema = new mongoose.Schema({
   },
   id: {
     type: Number,
-    default: Math.random() * 1000
+    required: true,
   }
 });
 
@@ -43,6 +43,7 @@ DomoSchema.statics.toAPI = (doc) => ({
   name: doc.name,
   age: doc.age,
   level: doc.level,
+  id: doc.id
 });
 
 // Establish the Domo model

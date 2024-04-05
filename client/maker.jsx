@@ -48,6 +48,16 @@ const saveDomos = (e, onDomosEdited) => {
 
     const reactDomos = document.querySelectorAll('.domoEditing');
     console.log(reactDomos);
+    for(let i = 0; i < reactDomos.length; i++) {
+        const name = reactDomos[i].querySelector('#editName').value;
+        const age = reactDomos[i].querySelector('#editAge').value;
+        const level = reactDomos[i].querySelector('#editLevel').value;
+        const id = reactDomos[i].id;
+
+        console.log(`Name: ${name}, Age: ${age}, Level: ${level}, ID: ${id}`);
+
+        //helper.sendPost()
+    }
 
     const loadDomosFromServer = async () => {
         const response = await fetch('/getDomos');
@@ -100,6 +110,7 @@ const DomoSaveButton = (props) => {
         return(
             <button id="domoSave"
                 onClick={(e) => saveEdits(e, props.triggerEditing, props.triggerReload)}
+                action="/maker"
                 className="domoSave">Save Domos
             </button>
         );
@@ -133,19 +144,19 @@ const DomoList = (props) => {
     domoNodes = domos.map(domo => {
         if(props.isEditing) {
             return (
-                <div key={domo.id} className="domoEditing">
+                <div id={domo.id} className="domoEditing">
                     <img src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"/>
                     <h3 className="domoName">Name: </h3>
-                    <input id="editName" type="text" name="name" placeholder={domo.name}/>
+                    <input id="editName" type="text" name="name" value={domo.name}/>
                     <h3 className="domoAge">Age: </h3>
-                    <input id="editAge" type="number" min="0" name="age" placeholder={domo.age}/>
+                    <input id="editAge" type="number" min="0" name="age" value={domo.age}/>
                     <h3 className="domoLevel">Level: </h3>
-                    <input id="editLevel" type="number" min="1" max="10" name="level" placeholder={domo.level}/>
+                    <input id="editLevel" type="number" min="1" max="10" name="level" value={domo.level}/>
                 </div>
             );
         } else {
             return (
-                <div key={domo.id} className="domo">
+                <div id={domo.id} className="domo">
                     <img src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"/>
                     <h3 className="domoName">Name: {domo.name}</h3>
                     <h3 className="domoAge">Age: {domo.age}</h3>

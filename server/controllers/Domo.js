@@ -17,7 +17,41 @@ const makeDomo = async (req, res) => {
     age: req.body.age,
     level: req.body.level,
     owner: req.session.account._id,
+    id: Math.floor(Math.random() * 10000),
   };
+
+  let domos = null;
+  // Compare domos
+  try {
+    // Try to get the domos for the account id
+    const query = { owner: req.session.account._id };
+    domos = await Domo.find(query).select('name age level id').lean().exec();
+  } catch (err) {
+    // Log any errors and return a status code
+    console.log(err);
+    return res.status(500).json({ error: 'Error retrieving domos!' });
+  }
+
+  // Check if the id is unique
+  let uniqueID = false;
+  while(!uniqueID) {
+    // If there are no domos, the unique ID is guaranteed
+    if(domos.length === 0) {
+      uniqueID = true;
+    }
+
+    // Compare IDs
+    for(let i = 0; i < domos.length; i++) {
+      if(domos[i].id === domoData.id) {
+        uniqueID = false;
+      } else {
+        uniqueID = true;
+      }
+    }
+
+    // Set a new id
+    domoData.id = Math.floor(Math.random() * 10000);
+  }
 
   try {
     // Create and save the domo using the data and the domo model
@@ -46,7 +80,6 @@ const editDomo = async (req, res) => {
     age: req.body.age,
     level: req.body.level,
     owner: req.session.account._id,
-    id: req.body.id,
   };
 
   try {
@@ -67,7 +100,7 @@ const getDomos = async (req, res) => {
   try {
     // Try to get the domos for the account id
     const query = { owner: req.session.account._id };
-    const docs = await Domo.find(query).select('name age level').lean().exec();
+    const docs = await Domo.find(query).select('name age level id').lean().exec();
 
     // Return the domos in a json
     return res.json({ domos: docs });
