@@ -35,7 +35,7 @@ const DomoSchema = new mongoose.Schema({
   id: {
     type: Number,
     required: true,
-  }
+  },
 });
 
 // Converts a doc to something we can store in redis later on.
@@ -43,7 +43,7 @@ DomoSchema.statics.toAPI = (doc) => ({
   name: doc.name,
   age: doc.age,
   level: doc.level,
-  id: doc.id
+  id: doc.id,
 });
 
 // Establish the Domo model

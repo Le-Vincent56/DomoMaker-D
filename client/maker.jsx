@@ -36,36 +36,71 @@ const saveEdits = (e, onSaveEdit, onDomosEdited) => {
     e.preventDefault();
     helper.hideError();
 
-    saveDomos(e, onDomosEdited);
-    onSaveEdit();
+    saveDomos(e, onSaveEdit, onDomosEdited);
     return false;
 }
 
-const saveDomos = (e, onDomosEdited) => {
+const saveDomos = async (e, onSaveEdit, onDomosEdited) => {
     // Prevent default events and hide error messages
     e.preventDefault();
     helper.hideError();
 
+    // Get all the current domos
     const reactDomos = document.querySelectorAll('.domoEditing');
-    console.log(reactDomos);
+
+    // Get the domos stored on the server
+    let storedDomos;
+    const response = await fetch('/getDomos');
+    storedDomos = await response.json();
+
+    // Loop through the domos and check for changes
     for(let i = 0; i < reactDomos.length; i++) {
-        const name = reactDomos[i].querySelector('#editName').value;
-        const age = reactDomos[i].querySelector('#editAge').value;
-        const level = reactDomos[i].querySelector('#editLevel').value;
-        const id = reactDomos[i].id;
+        // Get the edit inputs
+        const nameInput = reactDomos[i].querySelector('#editName');
+        const ageInput = reactDomos[i].querySelector('#editAge');
+        const levelInput = reactDomos[i].querySelector('#editLevel');
+        
+        // Get the edited values
+        let domoName = getEditValue(nameInput);
+        let domoAge = getEditValue(ageInput);
+        let domoLevel = getEditValue(levelInput);
 
-        console.log(`Name: ${name}, Age: ${age}, Level: ${level}, ID: ${id}`);
+        // Create the new domo
+        const reactDomo = {
+            name: domoName,
+            age: Number(domoAge),
+            level: Number(domoLevel),
+            id: Number(reactDomos[i].id),
+        };
 
-        //helper.sendPost()
+        // Compare the domos
+        for(let j = 0; j < Object.keys(storedDomos.domos).length; j++) {
+            compareDomos(e, reactDomo, storedDomos.domos[j], onDomosEdited);
+        }
     }
 
-    const loadDomosFromServer = async () => {
-        const response = await fetch('/getDomos');
-        const data = await response.json();
+    // Confirm save
+    onSaveEdit();
+    return false;
+}
 
-        for(let i = 0; i < data.domos.keys.length; i++) {
+const getEditValue = (element) => {
+    return element.value ? element.value : element.placeholder;
+}
 
-        }
+const compareDomos = (e, reactDomo, serverDomo, onDomosEdited) => {
+    // If the id's are not the same, then return
+    if(reactDomo.id !== serverDomo.id) return;
+
+    // Check for changes
+    let changes = false;
+    if(reactDomo.name !== serverDomo.name) changes = true;
+    if(reactDomo.age !== serverDomo.age) changes = true;
+    if(reactDomo.level !== serverDomo.level) changes = true;
+
+    // If they are the same and there's a difference, then send a post
+    if(changes) {
+        helper.sendPost("/save", reactDomo, onDomosEdited);
     }
 }
 
@@ -110,7 +145,6 @@ const DomoSaveButton = (props) => {
         return(
             <button id="domoSave"
                 onClick={(e) => saveEdits(e, props.triggerEditing, props.triggerReload)}
-                action="/maker"
                 className="domoSave">Save Domos
             </button>
         );
@@ -147,11 +181,11 @@ const DomoList = (props) => {
                 <div id={domo.id} className="domoEditing">
                     <img src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"/>
                     <h3 className="domoName">Name: </h3>
-                    <input id="editName" type="text" name="name" value={domo.name}/>
+                    <input id="editName" type="text" name="name" placeholder={domo.name}/>
                     <h3 className="domoAge">Age: </h3>
-                    <input id="editAge" type="number" min="0" name="age" value={domo.age}/>
+                    <input id="editAge" type="number" min="0" name="age" placeholder={domo.age}/>
                     <h3 className="domoLevel">Level: </h3>
-                    <input id="editLevel" type="number" min="1" max="10" name="level" value={domo.level}/>
+                    <input id="editLevel" type="number" min="1" max="10" name="level" placeholder={domo.level}/>
                 </div>
             );
         } else {
@@ -184,15 +218,17 @@ const App = () => {
     // and passes in the negation of reloadDomos so that it toggles every time it gets called
     return (
         <div>
-            <div id="makeDomo">
-                <DomoForm triggerReload={() => setReloadDomos(!reloadDomos)}/>
-            </div>
-            <div id="editDomo">
-                <DomoEditButton triggerEditing={() => setEditingDomos(true)}/>
-                <DomoSaveButton isEditing={editingDomos} 
-                    triggerEditing={() => setEditingDomos(false)} 
-                    triggerReload={() => setReloadDomos(!reloadDomos)}
-                />
+            <div id="domoControls">
+                <div id="makeDomo">
+                    <DomoForm triggerReload={() => setReloadDomos(!reloadDomos)}/>
+                </div>
+                <div id="editDomo">
+                    <DomoEditButton triggerEditing={() => setEditingDomos(true)}/>
+                    <DomoSaveButton isEditing={editingDomos} 
+                        triggerEditing={() => setEditingDomos(false)} 
+                        triggerReload={() => setReloadDomos(!reloadDomos)}
+                    />
+                </div>
             </div>
             <div id="domos">
                 <DomoList domos={[]} reloadDomos={reloadDomos} isEditing={editingDomos}/>

@@ -47,6 +47,30 @@ nav:nth-child(1) {
     background-color: #66bdff;
 }
 
+#domoControls {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+}
+
+#editDomo {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    margin-top: 12.5px;
+}
+
+#editDomo > button {
+    height: 25px;
+    transition: background-color 0.4s ease;
+    display: inline;
+    width: 110px;
+    background-color: #55acee;
+    border-radius: 2px;
+    color: white;
+    text-decoration: none;
+}
+
 .domoForm {
     border: 2px solid #338acc;
     height: 35px;
@@ -285,7 +309,7 @@ h3.domoLevel {
     height: 1.5em;
     font-weight: bold;
     font-size: 1.5em;
-    width: 35px;
+    width: 100px;
 }
 
 #editLevel {
@@ -293,7 +317,7 @@ h3.domoLevel {
     height: 1.5em;
     font-weight: bold;
     font-size: 1.5em;
-    width: 35px;
+    width: 50px;
 }
 
 .domo:first-child {

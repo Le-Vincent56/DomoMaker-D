@@ -21,6 +21,7 @@ const makeDomo = async (req, res) => {
   };
 
   let domos = null;
+
   // Compare domos
   try {
     // Try to get the domos for the account id
@@ -34,15 +35,15 @@ const makeDomo = async (req, res) => {
 
   // Check if the id is unique
   let uniqueID = false;
-  while(!uniqueID) {
+  while (!uniqueID) {
     // If there are no domos, the unique ID is guaranteed
-    if(domos.length === 0) {
+    if (domos.length === 0) {
       uniqueID = true;
     }
 
     // Compare IDs
-    for(let i = 0; i < domos.length; i++) {
-      if(domos[i].id === domoData.id) {
+    for (let i = 0; i < domos.length; i++) {
+      if (domos[i].id === domoData.id) {
         uniqueID = false;
       } else {
         uniqueID = true;
@@ -59,7 +60,7 @@ const makeDomo = async (req, res) => {
     await newDomo.save();
 
     // Once complete, redirect to the maker page
-    return res.status(201).json({ name: newDomo.name, age: newDomo.age , level: newDomo.level});
+    return res.status(201).json({ name: newDomo.name, age: newDomo.age, level: newDomo.level });
   } catch (err) {
     // If there's an error, log it
     console.log(err);
@@ -75,26 +76,32 @@ const makeDomo = async (req, res) => {
 };
 
 const editDomo = async (req, res) => {
+  // Create a domo object from the posted data
   const domoData = {
     name: req.body.name,
     age: req.body.age,
     level: req.body.level,
-    owner: req.session.account._id,
+    id: req.body.id,
   };
 
   try {
-    const query = {id: req.body.id};
-    const docs = await Domo.find(query).select('name age level').lean().exec();
-
-    console.log(docs);
-    return res.status(201).json({domo: docs});
-    
+    // Get a query and update data
+    const query = { id: req.body.id };
+    const updateDomo = await Domo.findOneAndUpdate(
+      query,
+      {
+        name: domoData.name,
+        age: domoData.age,
+        level: domoData.level,
+      },
+    ).lean().exec();
+    return res.status(200).json({ updateDomo });
   } catch (err) {
     // Log any errors and return a status code
     console.log(err);
-    return res.status(500).json({error: 'Error editing domo!'});
+    return res.status(500).json({ error: 'Error editing domo!' });
   }
-}
+};
 
 const getDomos = async (req, res) => {
   try {
@@ -115,5 +122,6 @@ const getDomos = async (req, res) => {
 module.exports = {
   makerPage,
   makeDomo,
+  editDomo,
   getDomos,
 };
